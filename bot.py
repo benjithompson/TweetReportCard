@@ -1,8 +1,9 @@
 """main bot script"""
 
+from twitter import get
+
 def main():
-    pass
+    user = get.user('TheRealDonaldTrump')
 
 if __name__ == '__main__':
     main()
-    
