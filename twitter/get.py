@@ -1,15 +1,16 @@
 """Connects to Twitter API using config.py oauth data"""
 
-from tweepy import OAuthHandler
-from tweepy import API
-import config as c
+import tweepy
+from twitter import config as c
 
-
-def auth():
-    auth = OAuthHandler(c.consumer_key, c.consumer_secret)
+def the_api():
+    auth = tweepy.OAuthHandler(c.consumer_key, c.consumer_secret)
     auth.set_access_token(c.access_token, c.access_token_secret)
-    return auth
+    api = tweepy.API(auth)
+    return api
 
-def user(name):
-    return API.get_user(name)
+def the_tweet_dump(api, ):
+    tweets = []
+    
+
     
