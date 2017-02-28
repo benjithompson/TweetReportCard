@@ -12,16 +12,18 @@
 import sys
 from collections import defaultdict
 
-from twitter import get
-import obj
+from twitter import config
+import twt
 
 def run(args):
 
-    api = get.the_api()
-    twit_dict = obj.get_user_dict(api)
-    obj.print_tweeter_names(twit_dict)
+    twit_dict = twt.get_user_dict(config.nameslist)
+    #twt.print_tweeter_names(twit_dict)
 
-
+    #iterates over twit_dict and loads each object's tweets list
+    twt.load_tweets(twit_dict)
+    twt.update_tweeters_stats(twit_dict)
+    twt.print_tweeter_stats(twit_dict)
 
 
 if __name__ == '__main__':
