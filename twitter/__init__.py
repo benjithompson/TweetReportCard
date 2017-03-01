@@ -1,1 +1,1 @@
-__all__ = ["config", "get", "stdstream", "post"]
+__all__ = ["config", "stdstream", "post"]
