@@ -1,6 +1,10 @@
+"""Streaming Class and methods"""
+
 import tweepy
 
-class StreamListener(tweepy.StreamListener): 
+class StreamListener(tweepy.StreamListener):
+    """Listens for stream updates and responds"""
+
     cnt = 0
     def on_status(self, tweet):
         print(str(StreamListener.cnt) + ':\n ' +tweet.text)
@@ -15,8 +19,8 @@ class StreamListener(tweepy.StreamListener):
 
 def run_stream(api, name):
     """starts a tweepy stream listening to name in tweeters dict"""
+    
     user = api.get_user(screen_name=name)
     listener = StreamListener()
     stream = tweepy.Stream(auth=api.auth, listener=listener)
     stream.filter(follow=[str(user.id)])
-    

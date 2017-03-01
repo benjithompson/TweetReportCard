@@ -1,8 +1,5 @@
 """main bot script"""
 
-
-import tweepy
-
 import twt
 from twitter import config
 from twitter import stdstream as ss
@@ -20,14 +17,14 @@ from twitter import stdstream as ss
 
 def run():
     """Main bot runner to start tweet agrigation and streaming analysis"""
+
     api = twt.get_api()
     tweeters = twt.get_user_dict(config.nameslist, api)
-    # twt.print_tweeter_names(TWEETERS)
-    # twt.load_tweets(api, TWEETERS)
-    # twt.update_tweeters_stats(TWEETERS)
-    # #twt.print_tweeter_stats(TWEETERS)
+    # twt.print_tweeter_names(tweeters)
+    # twt.load_tweets(api, tweeters)
+    # twt.update_tweeters_stats(tweeters)
+    # #twt.print_tweeter_stats(tweeters)
     ss.run_stream(api, 'realDonaldTrump')
-
 
 
 if __name__ == '__main__':
