@@ -50,6 +50,11 @@ def load_tweets(tweeters, cnt):
         else:
             tweeter.get_tweet_dump(cnt)
 
+def update_tweets(tweeters):
+    for name, tweeter in tweeters.items():
+        print('Updating ' + name)
+        tweeter.update_tweets()
+
 def update_tweeters_stats(tweeters):
     """Updates the stats for tweeters in list"""
 
@@ -103,15 +108,7 @@ def listener(tweeters, wait):
             time.sleep(wait)
     except KeyboardInterrupt:
         print(KeyboardInterrupt)
-        save_pickle(tweeters)
 
-def save_pickle(object):
-    """saves pickle to working dir"""
-    try:
-        pickle.dump(object, open("dump.pkl", "wb"))
-        print('pickle successfully written')
-    except pickle.PickleError as pe:
-        print(pe)
 
 class Tweeter:
     """Holds tweet text and stats as well as common user attributes for easy access"""
@@ -163,11 +160,23 @@ class Tweeter:
         newstats['stdreadability'] = ts.textstat.text_standard(msg)
         return newstats
 
-    def load_tweet_dump(self, count):
+    def update_tweets(self):
+        if len(self.tweets) == 0:
+            self.load_all_tweets()
+        else:
+            last_status_id = str(int(self.last_status_id)-1)
+            new_tweets = API.user_timeline(screen_name=self.screen_name,
+                                           max_id=last_status_id)
+
+            print('{0} new tweets added from {1}'.format(len(new_tweets), self.screen_name))
+            self.tweets.extend(new_tweets)
+
+    def load_tweets(self, count=200):
         """receives tweet text from api and appends to objects tweets list"""
 
         try:
-            tweet_dump = API.user_timeline(screen_name=self.screen_name, count=count)
+            tweet_dump = API.user_timeline(screen_name=self.screen_name,
+                                           count=count)
         except tweepy.TweepError:
             print(tweepy.TweepError)
 
@@ -182,7 +191,8 @@ class Tweeter:
         alltweets = []
 
         #make initial request for most recent tweets (200 is the maximum allowed count)
-        new_tweets = API.user_timeline(screen_name=self.screen_name, count=200)
+        new_tweets = API.user_timeline(screen_name=self.screen_name,
+                                       count=200)
 
         #save most recent tweets
         alltweets.extend(new_tweets)
@@ -195,7 +205,9 @@ class Tweeter:
             print("getting tweets before {0}".format(oldest))
 
             #all subsiquent requests use the max_id param to prevent duplicates
-            new_tweets = API.user_timeline(screen_name=self.screen_name, count=200, max_id=oldest)
+            new_tweets = API.user_timeline(screen_name=self.screen_name,
+                                           count=200,
+                                           max_id=oldest)
 
             #save most recent tweets
             alltweets.extend(new_tweets)
@@ -264,4 +276,4 @@ class Tweeter:
         """prints all tweets from self tweets list"""
 
         for tweet in self.tweets:
-            print(tweet)
+            print(tweet.text)
