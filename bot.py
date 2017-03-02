@@ -22,8 +22,8 @@ def run():
 
     tweeters = twt.get_peer_dict(config.nameslist)
     twt.print_tweeter_names(tweeters)
-    # twt.load_tweets(tweeters)
-    # twt.update_tweeters_stats(tweeters)
+    twt.load_tweets(tweeters, 0)
+    twt.update_tweeters_stats(tweeters)
 
     twt.listener(tweeters, 5*60)
 

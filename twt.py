@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 from pprint import pprint
+import pickle
 import time
 import sys
 
@@ -84,22 +85,33 @@ def listener(tweeters, wait):
 
     pprint('Listening for new tweets...')
     pprint(tweeters)
+    try:
+        while True:
+            print('.', end='')
+            sys.stdout.flush()
+            for name, tweeter in tweeters.items():
+                if tweeter.add_new_tweet_msg():
+                    #get msg stats
+                    msg_stats = tweeter.get_msg_stats(str(tweeter.get_last_tweet_msg))
+                    print('Msg Stats: ')
+                    pprint(msg_stats)
+                    tweeter.update_stats()
+                    print('Total Stats: ')
+                    pprint(tweeter.stats)
+                else:
+                    pass
+            time.sleep(wait)
+    except KeyboardInterrupt:
+        print(KeyboardInterrupt)
+        save_pickle(tweeters)
 
-    while True:
-        print('.', end='')
-        sys.stdout.flush()
-        for name, tweeter in tweeters.items():
-            if tweeter.add_new_tweet_msg():
-                #get msg stats
-                msg_stats = tweeter.get_msg_stats(str(tweeter.get_last_tweet_msg))
-                print('Msg Stats: ')
-                pprint(msg_stats)
-                tweeter.update_stats()
-                print('Total Stats: ')
-                pprint(tweeter.stats)
-            else:
-                pass
-        time.sleep(wait)
+def save_pickle(object):
+    """saves pickle to working dir"""
+    try:
+        pickle.dump(object, open("dump.pkl", "wb"))
+        print('pickle successfully written')
+    except pickle.PickleError as pe:
+        print(pe)
 
 class Tweeter:
     """Holds tweet text and stats as well as common user attributes for easy access"""
