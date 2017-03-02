@@ -2,6 +2,8 @@
 
 from collections import defaultdict
 from pprint import pprint
+import time
+import sys
 
 import tweepy
 from textstat import textstat as ts
@@ -21,7 +23,7 @@ def get_api():
 
     return api
 
-def get_user_dict(nameslist, api):
+def get_peer_dict(nameslist):
     """returns dict of users objects specified from namelist and returned from api"""
 
     tweeters = defaultdict(Tweeter)
@@ -29,7 +31,7 @@ def get_user_dict(nameslist, api):
     for name in nameslist:
 
         try:
-            user = api.get_user(screen_name=name)
+            user = API.get_user(screen_name=name)
         except tweepy.TweepError:
             print(tweepy.TweepError)
 
@@ -37,19 +39,23 @@ def get_user_dict(nameslist, api):
 
     return tweeters
 
-def load_tweets(api, tweeters):
-    """Loads the last 200 tweets from the API and list of tweeters"""
+def load_tweets(tweeters, cnt):
+    """Loads tweets from the API and list of tweeters"""
 
     for name, tweeter in tweeters.items():
         print('loading tweets from ' + name)
-        tweeter.load_tweet_dump(api, 200)
+        if cnt <= 0:
+            tweeter.load_all_tweets()
+        else:
+            tweeter.get_tweet_dump(cnt)
 
 def update_tweeters_stats(tweeters):
     """Updates the stats for tweeters in list"""
 
     for name, tweeter in tweeters.items():
-        print(name + ' stats updated')
+        print('Updating {0} stats...'.format(name))
         tweeter.update_stats()
+        print('Update complete.')
 
 def print_tweeter_names(tweeters):
     """prints all tweeter names in dict"""
@@ -71,7 +77,29 @@ def print_tweeter_stats(tweeters):
         print(name)
         tweeter.print_stats()
 
+API = get_api()
 
+def listener(tweeters, wait):
+    """checks for new status updates per wait time"""
+
+    pprint('Listening for new tweets...')
+    pprint(tweeters)
+
+    while True:
+        print('.', end='')
+        sys.stdout.flush()
+        for name, tweeter in tweeters.items():
+            if tweeter.add_new_tweet_msg():
+                #get msg stats
+                msg_stats = tweeter.get_msg_stats(str(tweeter.get_last_tweet_msg))
+                print('Msg Stats: ')
+                pprint(msg_stats)
+                tweeter.update_stats()
+                print('Total Stats: ')
+                pprint(tweeter.stats)
+            else:
+                pass
+        time.sleep(wait)
 
 class Tweeter:
     """Holds tweet text and stats as well as common user attributes for easy access"""
@@ -84,6 +112,7 @@ class Tweeter:
         self.tweets = []
         self.stats = Tweeter.init_stats()
         self.tweet_cnt = 0
+        self.last_status_id = self.get_updated_tweet_id()
 
     @staticmethod
     def init_stats():
@@ -122,12 +151,11 @@ class Tweeter:
         newstats['stdreadability'] = ts.textstat.text_standard(msg)
         return newstats
 
-    #get tweet_dump (max 200 tweets)
-    def load_tweet_dump(self, api, count):
+    def load_tweet_dump(self, count):
         """receives tweet text from api and appends to objects tweets list"""
 
         try:
-            tweet_dump = api.user_timeline(screen_name=self.screen_name, count=count)
+            tweet_dump = API.user_timeline(screen_name=self.screen_name, count=count)
         except tweepy.TweepError:
             print(tweepy.TweepError)
 
@@ -136,11 +164,63 @@ class Tweeter:
 
         self.tweet_cnt += len(self.tweets)
 
+    def load_all_tweets(self):
+        """Used from github user yanofsky. Loads all tweets from user"""
 
-    def add_new_tweet(self, msg):
-        """appends msg to objects tweets list"""
-        self.tweets.append(msg)
-        self.tweet_cnt += 1
+        alltweets = []
+
+        #make initial request for most recent tweets (200 is the maximum allowed count)
+        new_tweets = API.user_timeline(screen_name=self.screen_name, count=200)
+
+        #save most recent tweets
+        alltweets.extend(new_tweets)
+
+        #save the id of the oldest tweet less one
+        oldest = alltweets[-1].id - 1
+
+        #keep grabbing tweets until there are no tweets left to grab
+        while len(new_tweets) > 0:
+            print("getting tweets before {0}".format(oldest))
+
+            #all subsiquent requests use the max_id param to prevent duplicates
+            new_tweets = API.user_timeline(screen_name=self.screen_name, count=200, max_id=oldest)
+
+            #save most recent tweets
+            alltweets.extend(new_tweets)
+
+            #update the id of the oldest tweet less one
+            oldest = alltweets[-1].id - 1
+
+            print("...{0} tweets downloaded so far".format(len(alltweets)))
+        self.tweets.extend(alltweets)
+
+    def get_updated_tweet_id(self):
+        """returns the last status id"""
+        return str(API.user_timeline(id=self.user_id, count=1)[0].id)
+
+    def get_last_tweet_msg(self):
+        """returns the last status msg"""
+        last = self.tweets[-1]
+        return last
+
+    def add_new_tweet_msg(self):
+        """appends msg to objects tweets list if has newer id"""
+
+        new_id = self.get_updated_tweet_id()
+        old_id = self.last_status_id
+
+        if new_id > old_id:
+            msg = API.user_timeline(id=self.user_id, count=1)[0].text
+            self.tweets.append(msg)
+            self.tweet_cnt += 1
+            self.last_status_id = new_id
+
+            print('\nNew tweet!')
+            print('Name: {0}\nOld status: {1}\nNew status: {2}\nMsg: {3}\nNumTweets: {4}'
+                  .format(self.name, old_id, new_id, msg, self.tweet_cnt))
+            return True
+        else:
+            return False
 
     def update_stats(self):
         """trivial way to update stats by concatinating all tweets from tweets list and
@@ -148,7 +228,7 @@ class Tweeter:
 
         tweets_str = ''
         for tweet in self.tweets:
-            tweets_str += tweet
+            tweets_str += tweet.text
 
         self.stats = Tweeter.get_msg_stats(tweets_str)
 
@@ -170,6 +250,6 @@ class Tweeter:
 
     def print_tweets(self):
         """prints all tweets from self tweets list"""
-        
+
         for tweet in self.tweets:
             print(tweet)
