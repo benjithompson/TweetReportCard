@@ -1,8 +1,6 @@
 """Handles file read/write, pickling and user input"""
 
 import os
-import sys
-import datetime
 import pickle
 
 def get_path(filename, folder='', ext=''):
