@@ -1,5 +1,9 @@
 """main bot script"""
 
+from twitter import config
+from twitter import twt
+from utils import io
+
 """TODO:
     - Handle excepts - IN PROGRESS
     - Start stream to analyse new tweets from specified user(s) -IN PROGRESS
@@ -13,11 +17,6 @@ X   - Get twitter API auth - DONE
 X   - get tweetdumps of users, specified in a config list. -DONE
 X   - pickle - DONE
 """
-
-from twitter import twt
-from twitter import config
-from utils import io
-
 
 def run():
     """Main bot runner to start tweet agrigation and streaming analysis"""

@@ -52,11 +52,9 @@ def load_pickle(path):
     """opens object from pickle file at path"""
 
     data = None
-
+    
     try:
-        with open(path, 'rb') as pfile:
-            data = pickle.load(pfile)
-            print('pickle loaded!')
+        data = pickle.load(open(path, 'rb'))
 
     except pickle.UnpicklingError as perr:
         print(perr)
