@@ -51,6 +51,7 @@ def load_tweets(tweeters, cnt):
             tweeter.get_tweet_dump(cnt)
 
 def update_tweets(tweeters):
+    """adds new tweets for each tweeter in list"""
     for name, tweeter in tweeters.items():
         tweeter.update_tweets()
 
@@ -82,8 +83,6 @@ def print_tweeter_stats(tweeters):
         print(name)
         tweeter.print_stats()
 
-API = get_api()
-
 def listener(tweeters, wait):
     """checks for new status updates per wait time"""
 
@@ -108,6 +107,24 @@ def listener(tweeters, wait):
     except KeyboardInterrupt as kbi:
         print(kbi)
 
+def post_tweet(msg):
+    """adds tweet to api owner"""
+
+    try:
+        API.update_status(msg)
+    except tweepy.TweepError as terr:
+        print(terr)
+
+def reply(msg, tweeter_id):
+    """reposts msg using id of tweeter"""
+
+    try:
+        API.update_status(msg, in_replay_to_status_id=tweeter_id)
+    except tweepy.TweepError as terr:
+        print(terr)
+
+
+API = get_api()
 
 class Tweeter:
     """Holds tweet text and stats as well as common user attributes for easy access"""
