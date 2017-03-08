@@ -1,37 +1,27 @@
-## Welcome to GitHub Pages
+## Tweet Report Card Bot
 
-You can use the [editor on GitHub](https://github.com/benjithompson/TweetReportCard/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This is a Twitter Bot script that gathers tweets and runs text analysis to determine various features.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Written in Python 3.
 
-### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
-```markdown
-Syntax highlighted code block
+### Installation
 
-# Header 1
-## Header 2
-### Header 3
+1. Run install_dep.sh to install all necessary python package dependencies.
+2. Add the required fields in config.py to authenticate the [Twitter API connection](https://dev.twitter.com/overview/api)
+3. (Optional) - Change the nameslist tweeters to desired targets. 
+4. run `>python bot.py`
+5. Follow prompts to use pickle as needed.
+6. Wait...
 
-- Bulleted
-- List
 
-1. Numbered
-2. List
+### TextStat 
 
-**Bold** and _Italic_ and `Code` text
+Tweets are loaded into a list and analysed using the python package [TextStat 0.3.1](https://pypi.python.org/pypi/textstat). All textstat stat values are averaged to determine a final score, which is used in the posted message. Due to textstat text grading relying on sentence length, twitter may receive an artificially lower score from the imposed character limit per tweet. This is mitigated by using a relative average tweet grade from other peer to the target tweeter.
 
-[Link](url) and ![Image](src)
-```
+### NLTK
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+Not implimented yet.
 
-### Jekyll Themes
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/benjithompson/TweetReportCard/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
