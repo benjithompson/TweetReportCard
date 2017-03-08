@@ -1,7 +1,7 @@
 """Streaming Class and methods"""
 
 import tweepy
-import twt
+from . import twt
 
 class StreamListener(tweepy.StreamListener):
     """Listens for stream updates and responds"""
