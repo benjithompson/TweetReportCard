@@ -107,21 +107,27 @@ def listener(target, tweeters, wait):
 
                     if tweeter.screen_name == target:
                         print(target + ' tweeted! Retweeting stats...')
+
+                        t_id = tweeter.get_last_tweet().id
+                        name = tweeter.screen_name
+                        
                         msg = '@{0} Tweet Stats: \nAvg Syllables: {1}\nFlesch Grade: {2}\nFlesch Ease: {3}\nColeman Liau: {4}\nARI: {5}'.format(
-                            tweeter.screen_name,
+                            name,
                             msg_stats['avgsyllables'],
                             msg_stats['flesch_grade'],
                             msg_stats['flesch_ease'],
                             msg_stats['colemanliau'],
                             msg_stats['ari'])
-
                         print(msg)
-                        retweet(msg, tweeter.user_id)
+                        update_status(msg, t_id)
+
                         msg = '@{0} Overall Stats: {1}'.format(
-                            tweeter.screen_name,
+                            name,
                             tweeter.stats['stdreadability'])
                         print(msg)
-                        retweet(msg, tweeter.user_id)
+                        update_status(msg, t_id)
+
+                        retweet(name, t_id)
 
                 else:
                     pass
@@ -137,7 +143,7 @@ def post_tweet(msg):
     except tweepy.TweepError as terr:
         print(terr)
 
-def retweet(msg, tweeter_id):
+def update_status(msg, tweeter_id):
     """reposts msg using id of tweeter"""
 
     try:
@@ -145,6 +151,13 @@ def retweet(msg, tweeter_id):
     except tweepy.TweepError as terr:
         print(terr)
 
+def retweet(name, status_id):
+    """retweet as status with msg"""
+
+    try:
+        API.update_status('https://twitter.com/{0}/status/{1}'.format(name, status_id), status_id)
+    except tweepy.TweepError as terr:
+        print(terr)
 
 API = get_api()
 
@@ -218,10 +231,14 @@ class Tweeter:
         """returns the last status id"""
         return str(API.user_timeline(id=self.user_id, count=1)[0].id)
 
+    def get_last_tweet(self):
+        """returns last tweet object"""
+        return self.tweets[-1]
+
     def get_last_tweet_msg(self):
         """returns the last status msg"""
-        last = self.tweets[-1].text
-        return last
+        return self.tweets[-1].text
+        
 
     def add_new_tweet_msg(self):
         """appends msg to objects tweets list if has newer id"""
