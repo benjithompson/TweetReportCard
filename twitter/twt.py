@@ -108,9 +108,16 @@ def listener(target, tweeters, wait):
                     if tweeter.screen_name == target:
                         print(target + ' tweeted! Retweeting stats...')
 
-                        t_id = tweeter.get_last_tweet().id
+                        s_id = tweeter.get_last_tweet().id
+                        t_id = tweeter.user_id
                         name = tweeter.screen_name
-                        
+
+                        # msg = '@{0} Overall Stats: {1}'.format(
+                        #     name,
+                        #     tweeter.stats['stdreadability'])
+                        # print(msg)
+                        # update_status(msg, t_id)
+
                         msg = '@{0} Tweet Stats: \nAvg Syllables: {1}\nFlesch Grade: {2}\nFlesch Ease: {3}\nColeman Liau: {4}\nARI: {5}'.format(
                             name,
                             msg_stats['avgsyllables'],
@@ -120,14 +127,8 @@ def listener(target, tweeters, wait):
                             msg_stats['ari'])
                         print(msg)
                         update_status(msg, t_id)
-
-                        msg = '@{0} Overall Stats: {1}'.format(
-                            name,
-                            tweeter.stats['stdreadability'])
-                        print(msg)
-                        update_status(msg, t_id)
-
-                        retweet(name, t_id)
+                        time.sleep(5)
+                        retweet(name, s_id)
 
                 else:
                     pass
@@ -238,7 +239,7 @@ class Tweeter:
     def get_last_tweet_msg(self):
         """returns the last status msg"""
         return self.tweets[-1].text
-        
+
 
     def add_new_tweet_msg(self):
         """appends msg to objects tweets list if has newer id"""
