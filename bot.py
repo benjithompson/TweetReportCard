@@ -29,13 +29,13 @@ def run():
     if tweeters is not None:
         twt.update_tweets(tweeters)
     else:
-        print('Downloading tweet dump for:')
+        print('Downloading tweet dump:')
         tweeters = twt.get_peer_dict(config.nameslist)
-        twt.print_tweeter_names(tweeters)
+        # twt.print_tweeter_names(tweeters)
         twt.load_tweets(tweeters, 0)
         twt.update_tweeters_stats(tweeters)
-
-    twt.listener(tweeters, config.wait)
+    twt.print_tweeter_stats(tweeters)
+    twt.listener(config.target, tweeters, config.wait)
     filename = input('save pickle file: ')
     io.save_data_to_file(tweeters, filename)
 

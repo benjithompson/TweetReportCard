@@ -2,6 +2,7 @@
 
 import sys
 import time
+from datetime import datetime
 from collections import defaultdict
 from pprint import pprint
 
@@ -44,9 +45,10 @@ def load_tweets(tweeters, cnt):
     """Loads tweets from the API and list of tweeters"""
 
     for name, tweeter in tweeters.items():
-        print('loading tweets from ' + name)
+        print('loading tweets from ' + name + '...')
         if cnt <= 0:
             tweeter.load_all_tweets()
+            print('{0} tweets loaded.'.format(tweeter.tweet_cnt))
         else:
             tweeter.get_tweet_dump(cnt)
 
@@ -83,11 +85,11 @@ def print_tweeter_stats(tweeters):
         print(name)
         tweeter.print_stats()
 
-def listener(tweeters, wait):
+def listener(target, tweeters, wait):
     """checks for new status updates per wait time"""
 
-    pprint('Listening for new tweets...')
-    pprint(tweeters)
+    print('Listening for new tweets. Target: {0}'.format(target))
+
     try:
         while True:
             print('.', end='')
@@ -95,12 +97,32 @@ def listener(tweeters, wait):
             for name, tweeter in tweeters.items():
                 if tweeter.add_new_tweet_msg():
                     #get msg stats
-                    msg_stats = tweeter.get_msg_stats(str(tweeter.get_last_tweet_msg))
+                    msg_stats = ana.get_msg_stats(str(tweeter.get_last_tweet_msg()))
+
                     print('Msg Stats: ')
                     pprint(msg_stats)
                     tweeter.update_stats()
                     print('Total Stats: ')
                     pprint(tweeter.stats)
+
+                    if tweeter.screen_name == target:
+                        print(target + ' tweeted! Retweeting stats...')
+                        msg = '@{0} Tweet Stats: \nAvg Syllables: {1}\nFlesch Grade: {2}\nFlesch Ease: {3}\nColeman Liau: {4}\nARI: {5}'.format(
+                            tweeter.screen_name,
+                            msg_stats['avgsyllables'],
+                            msg_stats['flesch_grade'],
+                            msg_stats['flesch_ease'],
+                            msg_stats['colemanliau'],
+                            msg_stats['ari'])
+
+                        print(msg)
+                        retweet(msg, tweeter.user_id)
+                        msg = '@{0} Overall Stats: {1}'.format(
+                            tweeter.screen_name,
+                            tweeter.stats['stdreadability'])
+                        print(msg)
+                        retweet(msg, tweeter.user_id)
+
                 else:
                     pass
             time.sleep(wait)
@@ -115,7 +137,7 @@ def post_tweet(msg):
     except tweepy.TweepError as terr:
         print(terr)
 
-def reply(msg, tweeter_id):
+def retweet(msg, tweeter_id):
     """reposts msg using id of tweeter"""
 
     try:
@@ -179,7 +201,7 @@ class Tweeter:
 
         #keep grabbing tweets until there are no tweets left to grab
         while len(new_tweets) > 0:
-            print("getting tweets before {0}".format(oldest))
+            # print("getting tweets before {0}".format(oldest))
 
             new_tweets = API.user_timeline(screen_name=self.screen_name,
                                            count=200,
@@ -188,7 +210,7 @@ class Tweeter:
             alltweets.extend(new_tweets)
             oldest = alltweets[-1].id - 1
 
-            print("...{0} tweets downloaded so far".format(len(alltweets)))
+            # print("...{0} tweets downloaded so far".format(len(alltweets)))
         self.tweets.extend(alltweets)
         self.tweet_cnt = len(self.tweets)
 
@@ -198,7 +220,7 @@ class Tweeter:
 
     def get_last_tweet_msg(self):
         """returns the last status msg"""
-        last = self.tweets[-1]
+        last = self.tweets[-1].text
         return last
 
     def add_new_tweet_msg(self):
@@ -213,9 +235,9 @@ class Tweeter:
             self.tweet_cnt += 1
             self.last_status_id = new_id
 
-            print('\nNew tweet!')
-            print('Name: {0}\nOld status: {1}\nNew status: {2}\nMsg: {3}\nNumTweets: {4}'
-                  .format(self.name, old_id, new_id, tweet.text, self.tweet_cnt))
+            print('\nNew tweet: ' + tweet.created_at.strftime('%w:%b:%y %H.%M.%S'))
+            print('Name: {0}\nMsg: {1}\nNumTweets: {2}'
+                  .format(self.screen_name, tweet.text, self.tweet_cnt))
             return True
         else:
             return False
