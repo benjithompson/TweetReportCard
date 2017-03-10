@@ -52,7 +52,7 @@ def load_pickle(path):
     """opens object from pickle file at path"""
 
     data = None
-    
+
     try:
         data = pickle.load(open(path, 'rb'))
 

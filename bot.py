@@ -35,7 +35,10 @@ def run():
         twt.load_tweets(tweeters, 0)
         twt.update_tweeters_stats(tweeters)
     twt.print_tweeter_stats(tweeters)
+
+    # Monitors new tweets from nameslist
     twt.listener(config.target, tweeters, config.wait)
+
     filename = input('save pickle file: ')
     io.save_data_to_file(tweeters, filename)
 

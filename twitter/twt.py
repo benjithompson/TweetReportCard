@@ -92,7 +92,7 @@ def listener(target, tweeters, wait):
 
     try:
         while True:
-            print('.', end='')
+            # print('.', end='')
             sys.stdout.flush()
             for name, tweeter in tweeters.items():
                 if tweeter.add_new_tweet_msg():
@@ -102,8 +102,6 @@ def listener(target, tweeters, wait):
                     print('Msg Stats: ')
                     pprint(msg_stats)
                     tweeter.update_stats()
-                    print('Total Stats: ')
-                    pprint(tweeter.stats)
 
                     if tweeter.screen_name == target:
                         print(target + ' tweeted! Retweeting stats...')
@@ -127,6 +125,7 @@ def listener(target, tweeters, wait):
                             msg_stats['ari'])
                         print(msg)
                         update_status(msg, t_id)
+
                         time.sleep(5)
                         retweet(name, s_id)
 
